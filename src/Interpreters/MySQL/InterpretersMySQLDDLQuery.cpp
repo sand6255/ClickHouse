@@ -412,8 +412,10 @@ ASTs InterpreterCreateImpl::getRewrittenQueries(
         return column_declaration;
     };
 
-
+    /// Bad cast, but maybe something similar might work
     //ColumnsDescription columnsDescription = InterpreterCreateQuery::getColumnsDescription(create_query.columns_list->as<ASTExpressionList &>(), context, true);
+    
+    /// The idea is to make proper columnsDescription (with comments) from quary, but I'm not sure if quary in it's current form contains column comments
     ColumnsDescription columnsDescription = ColumnsDescription{columns_name_and_type};
     /// Add _sign and _version columns.
     String sign_column_name = getUniqueColumnName(columns_name_and_type, "_sign");
