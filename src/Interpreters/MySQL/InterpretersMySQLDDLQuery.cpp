@@ -412,10 +412,13 @@ ASTs InterpreterCreateImpl::getRewrittenQueries(
         return column_declaration;
     };
 
+
+    //ColumnsDescription columnsDescription = InterpreterCreateQuery::getColumnsDescription(create_query.columns_list->as<ASTExpressionList &>(), context, true);
+    ColumnsDescription columnsDescription = ColumnsDescription{columns_name_and_type};
     /// Add _sign and _version columns.
     String sign_column_name = getUniqueColumnName(columns_name_and_type, "_sign");
     String version_column_name = getUniqueColumnName(columns_name_and_type, "_version");
-    columns->set(columns->columns, InterpreterCreateQuery::formatColumns(columns_name_and_type));
+    columns->set(columns->columns, InterpreterCreateQuery::formatColumns(columnsDescription));
     columns->columns->children.emplace_back(create_materialized_column_declaration(sign_column_name, "Int8", UInt64(1)));
     columns->columns->children.emplace_back(create_materialized_column_declaration(version_column_name, "UInt64", UInt64(1)));
 

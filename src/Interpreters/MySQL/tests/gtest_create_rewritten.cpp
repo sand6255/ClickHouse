@@ -223,3 +223,15 @@ TEST(MySQLCreateRewritten, UniqueKeysConvert)
         std::string(MATERIALIZEMYSQL_TABLE_COLUMNS) +
         ") ENGINE = ReplacingMergeTree(_version) PARTITION BY intDiv(id, 18446744073709551) ORDER BY (code, name, tenant_id, id)");
 }
+
+TEST(MySQLCreateRewritten, QueryWithColumnComments)
+{
+    tryRegisterFunctions();
+    const auto & context_holder = getContext();
+
+    EXPECT_EQ(queryToString(tryRewrittenCreateQuery(
+        "CREATE TABLE `test_database`.`test_table_1`(`key` INT NOT NULL PRIMARY KEY, test INT COMMENT `Test comment`)", context_holder.context)),
+        "CREATE TABLE test_database.test_table_1 (`key` Int32, `test` Nullable(Int32) COMMENT `Test comment`" +
+        std::string(MATERIALIZEMYSQL_TABLE_COLUMNS) + 
+        ") ENGINE = ReplacingMergeTree(_version) PARTITION BY intDiv(key, 4294967) ORDER BY tuple(key)");
+}
