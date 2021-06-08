@@ -413,7 +413,7 @@ ASTs InterpreterCreateImpl::getRewrittenQueries(
     };
 
     /// Bad cast, but maybe something similar might work
-    //ColumnsDescription columnsDescription = InterpreterCreateQuery::getColumnsDescription(create_query.columns_list->as<ASTExpressionList &>(), context, true);
+    //ColumnsDescription columnsDescription = InterpreterCreateQuery::getColumnsDescription(*create_defines->columns, context, true);
     
     /// The idea is to make proper columnsDescription (with comments) from quary, but I'm not sure if quary in it's current form contains column comments
     ColumnsDescription columnsDescription = ColumnsDescription{columns_name_and_type};
