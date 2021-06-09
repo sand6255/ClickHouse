@@ -117,6 +117,46 @@ static inline NamesAndTypesList getColumnsList(ASTExpressionList * columns_defin
     return columns_name_and_type;
 }
 
+static inline ColumnsDescription getColumnsDescription(NamesAndTypesList columns_name_and_type, ASTExpressionList * columns_define)
+{
+    if (columns_name_and_type.size() != columns_define->children.size())
+            throw Exception("Columns of different size provided.", ErrorCodes::BAD_ARGUMENTS);
+
+    ColumnsDescription columns_description;
+    std::queue<ColumnDescription> columns_queue;
+    
+    for (const auto & column_name_and_type : columns_name_and_type)
+    {
+        columns_queue.push(ColumnDescription(column_name_and_type.name, column_name_and_type.type));
+    }
+
+    for (auto & declare_column_ast : columns_define->children)
+    {
+        const auto & declare_column = declare_column_ast->as<MySQLParser::ASTDeclareColumn>();
+
+        if (!declare_column || !declare_column->data_type)
+            throw Exception("Missing type in definition of column.", ErrorCodes::UNKNOWN_TYPE);
+        
+        String comment;
+        if (declare_column->column_options)
+        {
+            if (const auto * options = declare_column->column_options->as<MySQLParser::ASTDeclareOptions>())
+            {
+                if (options->changes.count("comment"))
+                    comment = options->changes.at("comment")->as<ASTLiteral>()->value.safeGet<String>();
+            }
+        }
+        
+        auto column_description = columns_queue.front();
+        columns_queue.pop();
+
+        column_description.comment = comment;
+        columns_description.add(column_description);
+    }
+
+    return columns_description;
+}
+
 static NamesAndTypesList getNames(const ASTFunction & expr, ContextPtr context, const NamesAndTypesList & columns)
 {
     if (expr.arguments->children.empty())
@@ -393,6 +433,7 @@ ASTs InterpreterCreateImpl::getRewrittenQueries(
 
     NamesAndTypesList columns_name_and_type = getColumnsList(create_defines->columns);
     const auto & [primary_keys, unique_keys, keys, increment_columns] = getKeys(create_defines->columns, create_defines->indices, context, columns_name_and_type);
+    ColumnsDescription columns_description = getColumnsDescription(columns_name_and_type, create_defines->columns);
 
     if (primary_keys.empty())
         throw Exception("The " + backQuoteIfNeed(mysql_database) + "." + backQuoteIfNeed(create_query.table)
@@ -412,15 +453,10 @@ ASTs InterpreterCreateImpl::getRewrittenQueries(
         return column_declaration;
     };
 
-    /// Bad cast, but maybe something similar might work
-    //ColumnsDescription columnsDescription = InterpreterCreateQuery::getColumnsDescription(*create_defines->columns, context, true);
-    
-    /// The idea is to make proper columnsDescription (with comments) from quary, but I'm not sure if quary in it's current form contains column comments
-    ColumnsDescription columnsDescription = ColumnsDescription{columns_name_and_type};
     /// Add _sign and _version columns.
     String sign_column_name = getUniqueColumnName(columns_name_and_type, "_sign");
     String version_column_name = getUniqueColumnName(columns_name_and_type, "_version");
-    columns->set(columns->columns, InterpreterCreateQuery::formatColumns(columnsDescription));
+    columns->set(columns->columns, InterpreterCreateQuery::formatColumns(columns_description));
     columns->columns->children.emplace_back(create_materialized_column_declaration(sign_column_name, "Int8", UInt64(1)));
     columns->columns->children.emplace_back(create_materialized_column_declaration(version_column_name, "UInt64", UInt64(1)));
 
