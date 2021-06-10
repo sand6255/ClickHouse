@@ -67,10 +67,10 @@ static inline String resolveDatabase(
     return current_database != replica_clickhouse_database ? "" : replica_clickhouse_database;
 }
 
-static inline NamesAndTypesList getColumnsList(const ASTExpressionList * columns_define)
+static NamesAndTypesList getColumnsList(const ASTExpressionList * columns_definition)
 {
     NamesAndTypesList columns_name_and_type;
-    for (const auto & declare_column_ast : columns_define->children)
+    for (const auto & declare_column_ast : columns_definition->children)
     {
         const auto & declare_column = declare_column_ast->as<MySQLParser::ASTDeclareColumn>();
 
@@ -117,16 +117,16 @@ static inline NamesAndTypesList getColumnsList(const ASTExpressionList * columns
     return columns_name_and_type;
 }
 
-static inline ColumnsDescription getColumnsDescription(const NamesAndTypesList & columns_name_and_type, const ASTExpressionList * columns_define)
+static ColumnsDescription getColumnsDescription(const NamesAndTypesList & columns_name_and_type, const ASTExpressionList * columns_definition)
 {
-    if (columns_name_and_type.size() != columns_define->children.size())
+    if (columns_name_and_type.size() != columns_definition->children.size())
             throw Exception("Columns of different size provided.", ErrorCodes::BAD_ARGUMENTS);
 
     ColumnsDescription columns_description;
     ColumnDescription column_description;
     
     for (
-        auto [column_name_and_type, declare_column_ast] = std::tuple{columns_name_and_type.begin(), columns_define->children.begin()};
+        auto [column_name_and_type, declare_column_ast] = std::tuple{columns_name_and_type.begin(), columns_definition->children.begin()};
         column_name_and_type != columns_name_and_type.end();
         column_name_and_type++,
         declare_column_ast++
@@ -188,8 +188,8 @@ static NamesAndTypesList modifyPrimaryKeysToNonNullable(const NamesAndTypesList 
     return non_nullable_primary_keys;
 }
 
-static inline std::tuple<NamesAndTypesList, NamesAndTypesList, NamesAndTypesList, NameSet> getKeys(
-    ASTExpressionList * columns_define, ASTExpressionList * indices_define, ContextPtr context, NamesAndTypesList & columns)
+static std::tuple<NamesAndTypesList, NamesAndTypesList, NamesAndTypesList, NameSet> getKeys(
+    ASTExpressionList * columns_definition, ASTExpressionList * indices_define, ContextPtr context, NamesAndTypesList & columns)
 {
     NameSet increment_columns;
     auto keys = makeASTFunction("tuple");
@@ -242,7 +242,7 @@ static inline std::tuple<NamesAndTypesList, NamesAndTypesList, NamesAndTypesList
         }
     }
 
-    for (const auto & declare_column_ast : columns_define->children)
+    for (const auto & declare_column_ast : columns_definition->children)
     {
         const auto & declare_column = declare_column_ast->as<MySQLParser::ASTDeclareColumn>();
 
@@ -515,8 +515,8 @@ ASTs InterpreterRenameImpl::getRewrittenQueries(
     ASTRenameQuery::Elements elements;
     for (const auto & rename_element : rename_query.elements)
     {
-        const auto & to_database =  resolveDatabase(rename_element.to.database, mysql_database, mapped_to_database, context);
-        const auto & from_database =  resolveDatabase(rename_element.from.database, mysql_database, mapped_to_database, context);
+        const auto & to_database = resolveDatabase(rename_element.to.database, mysql_database, mapped_to_database, context);
+        const auto & from_database = resolveDatabase(rename_element.from.database, mysql_database, mapped_to_database, context);
 
         if ((from_database == mapped_to_database || to_database == mapped_to_database) && to_database != from_database)
             throw Exception("Cannot rename with other database for external ddl query.", ErrorCodes::NOT_IMPLEMENTED);
@@ -679,7 +679,7 @@ ASTs InterpreterAlterImpl::getRewrittenQueries(
         }
         else if (alter_command->type == MySQLParser::ASTAlterCommand::RENAME_TABLE)
         {
-            const auto & to_database =  resolveDatabase(alter_command->new_database_name, mysql_database, mapped_to_database, context);
+            const auto & to_database = resolveDatabase(alter_command->new_database_name, mysql_database, mapped_to_database, context);
 
             if (to_database != mapped_to_database)
                 throw Exception("Cannot rename with other database for external ddl query.", ErrorCodes::NOT_IMPLEMENTED);
