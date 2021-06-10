@@ -67,7 +67,7 @@ static inline String resolveDatabase(
     return current_database != replica_clickhouse_database ? "" : replica_clickhouse_database;
 }
 
-static inline NamesAndTypesList getColumnsList(ASTExpressionList * columns_define)
+static inline NamesAndTypesList getColumnsList(const ASTExpressionList * columns_define)
 {
     NamesAndTypesList columns_name_and_type;
     for (const auto & declare_column_ast : columns_define->children)
@@ -117,40 +117,31 @@ static inline NamesAndTypesList getColumnsList(ASTExpressionList * columns_defin
     return columns_name_and_type;
 }
 
-static inline ColumnsDescription getColumnsDescription(NamesAndTypesList columns_name_and_type, ASTExpressionList * columns_define)
+static inline ColumnsDescription getColumnsDescription(const NamesAndTypesList & columns_name_and_type, const ASTExpressionList * columns_define)
 {
     if (columns_name_and_type.size() != columns_define->children.size())
             throw Exception("Columns of different size provided.", ErrorCodes::BAD_ARGUMENTS);
 
     ColumnsDescription columns_description;
-    std::queue<ColumnDescription> columns_queue;
+    ColumnDescription column_description;
     
-    for (const auto & column_name_and_type : columns_name_and_type)
+    for (
+        auto [column_name_and_type, declare_column_ast] = std::tuple{columns_name_and_type.begin(), columns_define->children.begin()};
+        column_name_and_type != columns_name_and_type.end();
+        column_name_and_type++,
+        declare_column_ast++
+    )
     {
-        columns_queue.push(ColumnDescription(column_name_and_type.name, column_name_and_type.type));
-    }
-
-    for (auto & declare_column_ast : columns_define->children)
-    {
-        const auto & declare_column = declare_column_ast->as<MySQLParser::ASTDeclareColumn>();
-
-        if (!declare_column || !declare_column->data_type)
-            throw Exception("Missing type in definition of column.", ErrorCodes::UNKNOWN_TYPE);
-        
+        const auto & declare_column = (*declare_column_ast)->as<MySQLParser::ASTDeclareColumn>();
         String comment;
         if (declare_column->column_options)
-        {
             if (const auto * options = declare_column->column_options->as<MySQLParser::ASTDeclareOptions>())
-            {
                 if (options->changes.count("comment"))
                     comment = options->changes.at("comment")->as<ASTLiteral>()->value.safeGet<String>();
-            }
-        }
         
-        auto column_description = columns_queue.front();
-        columns_queue.pop();
-
-        column_description.comment = comment;
+        column_description.name = column_name_and_type->name;
+        column_description.type = column_name_and_type->type;
+        column_description.comment = std::move(comment);
         columns_description.add(column_description);
     }
 
