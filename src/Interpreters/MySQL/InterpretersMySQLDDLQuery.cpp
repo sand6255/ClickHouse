@@ -102,12 +102,41 @@ static NamesAndTypesList getColumnsList(const ASTExpressionList * columns_defini
                 String type_name_upper = Poco::toUpper(data_type_function->name);
 
                 /// For example(in MySQL): CREATE TABLE test(column_name INT NOT NULL ... UNSIGNED)
-                if (type_name_upper.find("INT") != std::string::npos && !endsWith(type_name_upper, "SIGNED")
+                if (type_name_upper.find("INT") != String::npos && !endsWith(type_name_upper, "SIGNED")
                     && !endsWith(type_name_upper, "UNSIGNED"))
                     data_type_function->name = type_name_upper + " UNSIGNED";
             }
         }
+        auto * data_type_function = data_type->as<ASTFunction>();
 
+        if (data_type_function)
+        {
+            String type_name_upper = Poco::toUpper(data_type_function->name);
+            /// Transforms MySQL ENUM's list of strings to ClickHouse string-integer pairs
+            /// For example ENUM('a', 'b', 'c') -> ENUM('a'=1, 'b'=2, 'c'=3)
+            LOG_DEBUG(&Poco::Logger::get("TmpDebug"), "Type is " + type_name_upper);
+            if (type_name_upper.find("ENUM") != String::npos)
+            {
+                Int64 i = 0;
+                for (ASTPtr & child : data_type_function->arguments->children)
+                {
+                    auto newChild = std::make_shared<ASTFunction>();
+                    newChild->name = "equals";
+                    auto * literal = child->as<ASTLiteral>();
+
+                    newChild->arguments = std::make_shared<ASTExpressionList>();
+                    newChild->arguments->children.emplace_back(std::make_shared<ASTLiteral>(literal->value.get<String>()));
+                    newChild->arguments->children.emplace_back(std::make_shared<ASTLiteral>(++i));
+                    child = newChild;
+                }
+                for (ASTPtr & child : data_type_function->arguments->children)
+                {
+                    auto * literal = child->as<ASTFunction>();
+                    if(literal->arguments)
+                        LOG_DEBUG(&Poco::Logger::get("TmpDebug"), "Type is {}", literal->arguments->children[1]->as<ASTLiteral>()->value.get<Int64>());
+                }
+            }
+        }
         if (is_nullable)
             data_type = makeASTFunction("Nullable", data_type);
 
