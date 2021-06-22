@@ -853,6 +853,16 @@ def materialize_with_column_comments_test(clickhouse_node, mysql_node, service_n
     clickhouse_node.query("DROP DATABASE materialize_with_column_comments_test")
     mysql_node.query("DROP DATABASE materialize_with_column_comments_test")
 
+#def materialize_with_enum_test(clickhouse_node, mysql_node, service_name):
+#    mysql_node.query("DROP DATABASE IF EXISTS materialize_with_enum_test")
+#    clickhouse_node.query("DROP DATABASE IF EXISTS materialize_with_enum_test")
+#    mysql_node.query("CREATE DATABASE materialize_with_enum_test")
+#    mysql_node.query("CREATE TABLE materialize_with_enum_test.test (id int NOT NULL PRIMARY KEY, value ENUM('a','b','c')) ENGINE=InnoDB")
+#    clickhouse_node.query("CREATE DATABASE materialize_with_enum_test ENGINE = MaterializeMySQL('{}:3306', 'materialize_with_enum_test', 'root', 'clickhouse')".format(service_name))
+#    check_query(clickhouse_node, "DESCRIBE TABLE materialize_with_enum_test.test", "id\tInt32\t\t\t\t\t\nvalue\tNullable(String)\t\t\ttest comment\t\t\n_sign\tInt8\tMATERIALIZED\t1\t\t\t\n_version\tUInt64\tMATERIALIZED\t1\t\t\t\n")
+#    clickhouse_node.query("DROP DATABASE materialize_with_enum_test")
+#    mysql_node.query("DROP DATABASE materialize_with_enum_test")
+
 def move_to_prewhere_and_column_filtering(clickhouse_node, mysql_node, service_name):
     clickhouse_node.query("DROP DATABASE IF EXISTS cond_on_key_col")
     mysql_node.query("DROP DATABASE IF EXISTS cond_on_key_col")

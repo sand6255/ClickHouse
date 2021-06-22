@@ -118,8 +118,8 @@ static NamesAndTypesList getColumnsList(const ASTExpressionList * columns_defini
                     auto * literal = child->as<ASTLiteral>();
 
                     newChild->arguments = std::make_shared<ASTExpressionList>();
-                    newChild->arguments->children.emplace_back(std::make_shared<ASTLiteral>(literal->value.get<String>()));
-                    newChild->arguments->children.emplace_back(std::make_shared<ASTLiteral>(++i));
+                    newChild->arguments->children.push_back(std::make_shared<ASTLiteral>(literal->value.get<String>()));
+                    newChild->arguments->children.push_back(std::make_shared<ASTLiteral>(++i));
                     child = newChild;
                 }
             }
