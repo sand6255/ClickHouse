@@ -9,7 +9,7 @@
 #include <Common/FieldVisitorToString.h>
 #include <Core/MySQL/PacketsGeneric.h>
 #include <Core/MySQL/PacketsProtocolText.h>
-
+#include <common/logger_useful.h>
 
 namespace DB
 {
@@ -211,7 +211,6 @@ namespace MySQLReplication
                 case MYSQL_TYPE_TIMESTAMP2:
                 case MYSQL_TYPE_DATETIME2:
                 case MYSQL_TYPE_BLOB:
-                case MYSQL_TYPE_ENUM:
                 {
                     column_meta.emplace_back(UInt16(meta[pos]));
                     pos += 1;
@@ -565,9 +564,18 @@ namespace MySQLReplication
                     }
                     case MYSQL_TYPE_ENUM:
                     {
-                        UInt8 val = 0;
-                        payload.readStrict(reinterpret_cast<char *>(&val), 1);
-                        row.push_back(Field{UInt8{val}});    
+                        if((meta & 0xFF) == 1)
+                        {
+                            UInt8 val = 0;
+                            payload.readStrict(reinterpret_cast<char *>(&val), 1);
+                            row.push_back(Field{UInt8{val}});
+                        }
+                        else
+                        {
+                            UInt16 val = 0;
+                            payload.readStrict(reinterpret_cast<char *>(&val), 2);
+                            row.push_back(Field{UInt16{val}});
+                        }
                         break;
                     }
                     case MYSQL_TYPE_VARCHAR:

@@ -110,7 +110,7 @@ static NamesAndTypesList getColumnsList(const ASTExpressionList * columns_defini
             /// For example ENUM('a', 'b', 'c') -> ENUM('a'=1, 'b'=2, 'c'=3)
             if (type_name_upper.find("ENUM") != String::npos)
             {
-                Int64 i = 0;
+                UInt16 i = 0;
                 for (ASTPtr & child : data_type_function->arguments->children)
                 {
                     auto newChild = std::make_shared<ASTFunction>();
@@ -119,7 +119,7 @@ static NamesAndTypesList getColumnsList(const ASTExpressionList * columns_defini
 
                     newChild->arguments = std::make_shared<ASTExpressionList>();
                     newChild->arguments->children.push_back(std::make_shared<ASTLiteral>(literal->value.get<String>()));
-                    newChild->arguments->children.push_back(std::make_shared<ASTLiteral>(++i));
+                    newChild->arguments->children.push_back(std::make_shared<ASTLiteral>(Int16(++i)));
                     child = newChild;
                 }
             }

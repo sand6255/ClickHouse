@@ -159,23 +159,13 @@ namespace
                 read_bytes_size += 8;
                 break;
             case ValueType::vtEnum8:
-            {
-                LOG_DEBUG(&Poco::Logger::get("TMPDebug"), "ENUM column datatype is: " + String(value.data()));
-                auto x = static_cast<const DataTypeEnum<Int8> &>(data_type).castToValue(value.data());
-                LOG_DEBUG(&Poco::Logger::get("TMPDebug"), "ENUM value is: " + std::to_string(x.get<Int64>()));
-                assert_cast<ColumnInt8 &>(column).insertValue(x.get<Int64>());
+                assert_cast<ColumnInt8 &>(column).insertValue(static_cast<const DataTypeEnum<Int8> &>(data_type).castToValue(value.data()).get<Int64>());
                 read_bytes_size += assert_cast<ColumnInt8 &>(column).byteSize();
                 break;
-            }
             case ValueType::vtEnum16:
-            {
-                LOG_DEBUG(&Poco::Logger::get("TMPDebug"), "ENUM column datatype is: " + String(value.data()));
-                auto x = static_cast<const DataTypeEnum<Int16> &>(data_type).castToValue(value.data());
-                LOG_DEBUG(&Poco::Logger::get("TMPDebug"), "ENUM value is: " + std::to_string(x.get<Int64>()));
-                assert_cast<ColumnInt16 &>(column).insertValue(x.get<Int64>());
+                assert_cast<ColumnInt16 &>(column).insertValue(static_cast<const DataTypeEnum<Int16> &>(data_type).castToValue(value.data()).get<Int64>());
                 read_bytes_size += assert_cast<ColumnInt16 &>(column).byteSize();
                 break;
-            }
             case ValueType::vtString:
                 assert_cast<ColumnString &>(column).insertData(value.data(), value.size());
                 read_bytes_size += assert_cast<ColumnString &>(column).byteSize();
