@@ -10,6 +10,7 @@
 #include <Core/MySQL/PacketsGeneric.h>
 #include <Core/MySQL/PacketsProtocolText.h>
 
+
 namespace DB
 {
 namespace ErrorCodes
@@ -297,7 +298,6 @@ namespace MySQLReplication
     }
 
     /// Types that do not used in the binlog event:
-    /// MYSQL_TYPE_ENUM
     /// MYSQL_TYPE_SET
     /// MYSQL_TYPE_TINY_BLOB
     /// MYSQL_TYPE_MEDIUM_BLOB
