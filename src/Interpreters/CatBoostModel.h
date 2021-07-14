@@ -7,7 +7,7 @@
 namespace DB
 {
 
-/// CatBoost wrapper interface functions.
+/// CatBoost wrapper interface functions..
 struct CatBoostWrapperAPI;
 class CatBoostWrapperAPIProvider
 {
