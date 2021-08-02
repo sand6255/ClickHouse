@@ -35,7 +35,7 @@ std::shared_ptr<const IExternalLoadable> ExternalModelsLoader::create(
     }
     else
     {
-        throw Exception("Unknown model type: " + type, ErrorCodes::INVALID_CONFIG_PARAMETER);
+        throw Exception("Unknown model type: " + type, ErrorCodes::INVALID_CONFIG_PARAMETER);;
     }
 }
 }
