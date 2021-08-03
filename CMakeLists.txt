@@ -541,8 +541,9 @@ include (cmake/find/libpqxx.cmake)
 include (cmake/find/nuraft.cmake)
 include (cmake/find/yaml-cpp.cmake)
 
+
 if(NOT USE_INTERNAL_PARQUET_LIBRARY)
-    set (ENABLE_ORC OFF CACHE INTERNAL "")
+set (ENABLE_ORC OFF CACHE INTERNAL "")
 endif()
 include (cmake/find/orc.cmake)
 
@@ -552,6 +553,7 @@ include (cmake/find/cassandra.cmake)
 include (cmake/find/sentry.cmake)
 include (cmake/find/stats.cmake)
 include (cmake/find/datasketches.cmake)
+include (cmake/find/libtorch.cmake)
 
 set (USE_INTERNAL_CITYHASH_LIBRARY ON CACHE INTERNAL "")
 find_contrib_lib(cityhash)
@@ -559,7 +561,7 @@ find_contrib_lib(cityhash)
 find_contrib_lib(farmhash)
 
 if (ENABLE_TESTS)
-    include (cmake/find/gtest.cmake)
+include (cmake/find/gtest.cmake)
 endif ()
 
 # Need to process before "contrib" dir:
@@ -570,33 +572,33 @@ include (cmake/find/mysqlclient.cmake)
 include (cmake/print_flags.cmake)
 
 if (TARGET global-group)
-    install (EXPORT global DESTINATION cmake)
+install (EXPORT global DESTINATION cmake)
 endif ()
 
 add_subdirectory (contrib EXCLUDE_FROM_ALL)
 
 if (NOT ENABLE_JEMALLOC)
-    message (WARNING "Non default allocator is disabled. This is not recommended for production builds.")
+message (WARNING "Non default allocator is disabled. This is not recommended for production builds.")
 endif ()
 
 macro (add_executable target)
-    # invoke built-in add_executable
-    # explicitly acquire and interpose malloc symbols by clickhouse_malloc
-    # if GLIBC_COMPATIBILITY is ON and ENABLE_THINLTO is on than provide memcpy symbol explicitly to neutrialize thinlto's libcall generation.
-    if (GLIBC_COMPATIBILITY AND ENABLE_THINLTO)
-        _add_executable (${ARGV} $<TARGET_OBJECTS:clickhouse_malloc> $<TARGET_OBJECTS:memcpy>)
-    else ()
-        _add_executable (${ARGV} $<TARGET_OBJECTS:clickhouse_malloc>)
-    endif ()
+# invoke built-in add_executable
+# explicitly acquire and interpose malloc symbols by clickhouse_malloc
+# if GLIBC_COMPATIBILITY is ON and ENABLE_THINLTO is on than provide memcpy symbol explicitly to neutrialize thinlto's libcall generation.
+if (GLIBC_COMPATIBILITY AND ENABLE_THINLTO)
+_add_executable (${ARGV} $<TARGET_OBJECTS:clickhouse_malloc> $<TARGET_OBJECTS:memcpy>)
+else ()
+_add_executable (${ARGV} $<TARGET_OBJECTS:clickhouse_malloc>)
+endif ()
 
-    get_target_property (type ${target} TYPE)
-    if (${type} STREQUAL EXECUTABLE)
-        # disabled for TSAN and gcc since libtsan.a provides overrides too
-        if (TARGET clickhouse_new_delete)
-            # operator::new/delete for executables (MemoryTracker stuff)
-            target_link_libraries (${target} PRIVATE clickhouse_new_delete ${MALLOC_LIBRARIES})
-        endif()
-    endif()
+get_target_property (type ${target} TYPE)
+if (${type} STREQUAL EXECUTABLE)
+# disabled for TSAN and gcc since libtsan.a provides overrides too
+if (TARGET clickhouse_new_delete)
+# operator::new/delete for executables (MemoryTracker stuff)
+target_link_libraries (${target} PRIVATE clickhouse_new_delete ${MALLOC_LIBRARIES})
+endif()
+endif()
 endmacro()
 
 set(ConfigIncludePath ${CMAKE_CURRENT_BINARY_DIR}/includes/configs CACHE INTERNAL "Path to generated configuration files.")

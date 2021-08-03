@@ -125,6 +125,7 @@ SRCS(
     PredicateRewriteVisitor.cpp
     ProcessList.cpp
     ProfileEventsExt.cpp
+    PyTorchModel.cpp
     QueryAliasesVisitor.cpp
     QueryLog.cpp
     QueryNormalizer.cpp

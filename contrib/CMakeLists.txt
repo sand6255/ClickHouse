@@ -319,6 +319,11 @@ if (USE_INTERNAL_ROCKSDB_LIBRARY)
     add_subdirectory(rocksdb-cmake)
 endif()
 
+if (USE_LIBTORCH)
+    set(USE_ROCKSDB 0)
+    add_subdirectory(pytorch)
+endif()
+
 if (USE_LIBPQXX)
     add_subdirectory (libpq-cmake)
     add_subdirectory (libpqxx-cmake)

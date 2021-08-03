@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Interpreters/CatBoostModel.h>
+#include <Interpreters/PyTorchModel.h>
 #include <Interpreters/Context_fwd.h>
 #include <Interpreters/ExternalLoader.h>
 #include <common/logger_useful.h>

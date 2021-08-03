@@ -33,6 +33,13 @@ std::shared_ptr<const IExternalLoadable> ExternalModelsLoader::create(
                 lifetime
         );
     }
+    else if (type == "pytorch")
+    {
+        return std::make_unique<PyTorchModel>(
+                name, config.getString(config_prefix + ".path"),
+                lifetime
+        );
+    }
     else
     {
         throw Exception("Unknown model type: " + type, ErrorCodes::INVALID_CONFIG_PARAMETER);
