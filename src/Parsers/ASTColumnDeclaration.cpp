@@ -43,6 +43,12 @@ ASTPtr ASTColumnDeclaration::clone() const
         res->children.push_back(res->ttl);
     }
 
+    /*if (default_sort_description)
+    {
+        res->default_sort_description = default_sort_description->clone();
+        res->children.push_back(res->default_sort_description);
+    }*/
+
     return res;
 }
 
@@ -91,6 +97,13 @@ void ASTColumnDeclaration::formatImpl(const FormatSettings & settings, FormatSta
     {
         settings.ostr << ' ' << (settings.hilite ? hilite_keyword : "") << "TTL" << (settings.hilite ? hilite_none : "") << ' ';
         ttl->formatImpl(settings, state, frame);
+    }
+
+    if (default_sort_description)
+    {
+        settings.ostr << ' ';
+        if (default_sort_description->collator)
+            settings.ostr << (settings.hilite ? hilite_keyword : "") << "COLLATOR" << (settings.hilite ? hilite_none : "") << ' ';
     }
 }
 

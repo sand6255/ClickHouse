@@ -71,6 +71,7 @@ struct AlterCommand
 
     ColumnDefaultKind default_kind{};
     ASTPtr default_expression{};
+    SortDescriptionPtr default_sort_description{};
 
     /// For COMMENT column
     std::optional<String> comment;

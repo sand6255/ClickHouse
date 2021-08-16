@@ -374,6 +374,9 @@ ASTPtr InterpreterCreateQuery::formatColumns(const ColumnsDescription & columns)
         if (column.ttl)
             column_declaration->ttl = column.ttl;
 
+        if (column.default_sort_description)
+            column_declaration->default_sort_description = column.default_sort_description;
+
         columns_list->children.push_back(column_declaration_ptr);
     }
 
@@ -526,6 +529,9 @@ ColumnsDescription InterpreterCreateQuery::getColumnsDescription(
 
         if (col_decl.ttl)
             column.ttl = col_decl.ttl;
+
+        if (col_decl.default_sort_description)
+            column.default_sort_description = col_decl.default_sort_description;
 
         res.add(std::move(column));
     }

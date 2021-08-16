@@ -132,6 +132,9 @@ void ColumnDescription::readText(ReadBuffer & buf)
 
             if (col_ast->ttl)
                 ttl = col_ast->ttl;
+
+            if (col_ast->default_sort_description)
+                default_sort_description = col_ast->default_sort_description;
         }
         else
             throw Exception("Cannot parse column description", ErrorCodes::CANNOT_PARSE_TEXT);
