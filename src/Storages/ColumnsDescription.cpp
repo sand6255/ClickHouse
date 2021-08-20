@@ -132,7 +132,6 @@ void ColumnDescription::readText(ReadBuffer & buf)
 
             if (col_ast->ttl)
                 ttl = col_ast->ttl;
-
         }
         else
             throw Exception("Cannot parse column description", ErrorCodes::CANNOT_PARSE_TEXT);

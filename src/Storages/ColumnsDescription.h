@@ -5,7 +5,6 @@
 #include <Core/Names.h>
 #include <Core/NamesAndTypes.h>
 #include <Core/NamesAndAliases.h>
-#include <Core/SortDescription.h>
 #include <Interpreters/Context_fwd.h>
 #include <Storages/ColumnCodec.h>
 #include <Storages/ColumnDefault.h>
@@ -29,7 +28,6 @@ namespace ErrorCodes
     extern const int LOGICAL_ERROR;
 }
 
-using SortDescriptionPtr = std::shared_ptr<const SortColumnDescription>;
 
 /// Description of a single table column (in CREATE TABLE for example).
 struct ColumnDescription
