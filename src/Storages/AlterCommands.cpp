@@ -359,7 +359,6 @@ void AlterCommand::apply(StorageInMemoryMetadata & metadata, ContextPtr context)
         {
             column.default_desc.kind = default_kind;
             column.default_desc.expression = default_expression;
-            column.default_sort_description = default_sort_description;
         }
         if (comment)
             column.comment = *comment;
@@ -423,7 +422,6 @@ void AlterCommand::apply(StorageInMemoryMetadata & metadata, ContextPtr context)
                 {
                     column.default_desc.kind = default_kind;
                     column.default_desc.expression = default_expression;
-                    column.default_sort_description = default_sort_description;
                 }
             }
         });
@@ -986,7 +984,6 @@ void AlterCommands::prepare(const StorageInMemoryMetadata & metadata)
                 {
                     command.default_kind = column_from_table.default_desc.kind;
                     command.default_expression = column_from_table.default_desc.expression;
-                    command.default_sort_description = column_from_table.default_sort_description;
                 }
 
             }

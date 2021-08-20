@@ -40,7 +40,6 @@ struct ColumnDescription
     String comment;
     ASTPtr codec;
     ASTPtr ttl;
-    ASTPtr default_sort_description;
 
     ColumnDescription() = default;
     ColumnDescription(ColumnDescription &&) = default;
