@@ -8,7 +8,6 @@
 #include <Interpreters/TreeRewriter.h>
 #include <Storages/extractKeyExpressionList.h>
 #include <Common/quoteString.h>
-#include <common/logger_useful.h>
 
 namespace DB
 {
