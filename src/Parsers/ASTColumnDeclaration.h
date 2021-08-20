@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Parsers/IAST.h>
-#include <Storages/ColumnsDescription.h>
 
 namespace DB
 {
@@ -18,9 +17,9 @@ public:
     String default_specifier;
     ASTPtr default_expression;
     ASTPtr comment;
+    ASTPtr collation;
     ASTPtr codec;
     ASTPtr ttl;
-    SortDescriptionPtr default_sort_description;
 
     String getID(char delim) const override { return "ColumnDeclaration" + (delim + name); }
 

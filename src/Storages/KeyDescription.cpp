@@ -8,7 +8,7 @@
 #include <Interpreters/TreeRewriter.h>
 #include <Storages/extractKeyExpressionList.h>
 #include <Common/quoteString.h>
-
+#include <common/logger_useful.h>
 
 namespace DB
 {
@@ -128,9 +128,13 @@ KeyDescription KeyDescription::getSortingKeyFromAST(
         result.expression_list_ast->children.push_back(column_identifier);
     }
 
+    LOG_INFO(&Poco::Logger::get("Test_test_"), "It works 1 {}", columns.getAll().front().name);
     const auto & children = result.expression_list_ast->children;
-    for (const auto & child : children)
+    for (const auto & child : children) {
+        LOG_INFO(&Poco::Logger::get("Test_test_"), "It works 2");
         result.column_names.emplace_back(child->getColumnName());
+    }
+    LOG_INFO(&Poco::Logger::get("Test_test_"), "It works 3 {}", columns.getAll().front().name);
 
     {
         auto expr = result.expression_list_ast->clone();
@@ -141,6 +145,7 @@ KeyDescription KeyDescription::getSortingKeyFromAST(
         result.sample_block = ExpressionAnalyzer(expr, syntax_result, context).getActions(true)->getSampleBlock();
     }
 
+    LOG_INFO(&Poco::Logger::get("Test_test_"), "It works 4 {}", columns.getAll().front().name);
     for (size_t i = 0; i < result.sample_block.columns(); ++i)
     {
         result.data_types.emplace_back(result.sample_block.getByPosition(i).type);

@@ -1,4 +1,5 @@
 #include <Parsers/ParserOptimizeQuery.h>
+#include <Parsers/ParserCreateQuery.h>
 
 #include <Parsers/ParserQueryWithOutput.h>
 #include <Parsers/parseQuery.h>
@@ -97,6 +98,15 @@ INSTANTIATE_TEST_SUITE_P(ParserOptimizeQuery, ParserTest, ::testing::Values(
         std::make_shared<ParserOptimizeQuery>(),
         "OPTIMIZE TABLE table_name DEDUPLICATE BY * EXCEPT (a, b)",
         "OPTIMIZE TABLE table_name DEDUPLICATE BY * EXCEPT (a, b)"
+    }
+));
+
+INSTANTIATE_TEST_SUITE_P(ParserCreateWithCollateQuery, ParserTest, ::testing::Values(
+    ParserTestCase
+    {
+        std::make_shared<ParserCreateTableQuery>(),
+        "CREATE TABLE table_name\n(\n    `str` VARCHAR(255) COLLATE 'tr',\n    `num` INT\n)\nENGINE = MergeTree\nCOLLATE 'en'",
+        "CREATE TABLE table_name\n(\n    `str` VARCHAR(255) COLLATE 'tr',\n    `num` INT\n)\nENGINE = MergeTree\nCOLLATE 'en'"
     }
 ));
 

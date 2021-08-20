@@ -40,7 +40,8 @@ struct ColumnDescription
     String comment;
     ASTPtr codec;
     ASTPtr ttl;
-    SortDescriptionPtr default_sort_description;
+    ASTPtr default_sort_description;
+
     ColumnDescription() = default;
     ColumnDescription(ColumnDescription &&) = default;
     ColumnDescription(const ColumnDescription &) = default;

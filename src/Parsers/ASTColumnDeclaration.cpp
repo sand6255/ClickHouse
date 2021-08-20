@@ -31,6 +31,12 @@ ASTPtr ASTColumnDeclaration::clone() const
         res->children.push_back(res->comment);
     }
 
+    if (collation)
+    {
+        res->collation = collation->clone();
+        res->children.push_back(res->collation);
+    }
+
     if (codec)
     {
         res->codec = codec->clone();
@@ -42,12 +48,6 @@ ASTPtr ASTColumnDeclaration::clone() const
         res->ttl = ttl->clone();
         res->children.push_back(res->ttl);
     }
-
-    /*if (default_sort_description)
-    {
-        res->default_sort_description = default_sort_description->clone();
-        res->children.push_back(res->default_sort_description);
-    }*/
 
     return res;
 }
@@ -87,6 +87,12 @@ void ASTColumnDeclaration::formatImpl(const FormatSettings & settings, FormatSta
         comment->formatImpl(settings, state, frame);
     }
 
+    if (collation)
+    {
+        settings.ostr << ' ' << (settings.hilite ? hilite_keyword : "") << "COLLATE" << (settings.hilite ? hilite_none : "") << ' ';
+        collation->formatImpl(settings, state, frame);
+    }
+
     if (codec)
     {
         settings.ostr << ' ';
@@ -97,13 +103,6 @@ void ASTColumnDeclaration::formatImpl(const FormatSettings & settings, FormatSta
     {
         settings.ostr << ' ' << (settings.hilite ? hilite_keyword : "") << "TTL" << (settings.hilite ? hilite_none : "") << ' ';
         ttl->formatImpl(settings, state, frame);
-    }
-
-    if (default_sort_description)
-    {
-        settings.ostr << ' ';
-        if (default_sort_description->collator)
-            settings.ostr << (settings.hilite ? hilite_keyword : "") << "COLLATOR" << (settings.hilite ? hilite_none : "") << ' ';
     }
 }
 

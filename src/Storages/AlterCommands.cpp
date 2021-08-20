@@ -89,7 +89,6 @@ std::optional<AlterCommand> AlterCommand::parse(const ASTAlterCommand * command_
         {
             command.default_kind = columnDefaultKindFromString(ast_col_decl.default_specifier);
             command.default_expression = ast_col_decl.default_expression;
-            command.default_sort_description = ast_col_decl.default_sort_description;
         }
 
         if (ast_col_decl.comment)
@@ -109,9 +108,6 @@ std::optional<AlterCommand> AlterCommand::parse(const ASTAlterCommand * command_
 
         if (ast_col_decl.ttl)
             command.ttl = ast_col_decl.ttl;
-        
-        if (ast_col_decl.default_sort_description)
-            command.default_sort_description = ast_col_decl.default_sort_description;
 
         command.first = command_ast->first;
         command.if_not_exists = command_ast->if_not_exists;
@@ -151,7 +147,6 @@ std::optional<AlterCommand> AlterCommand::parse(const ASTAlterCommand * command_
         {
             command.default_kind = columnDefaultKindFromString(ast_col_decl.default_specifier);
             command.default_expression = ast_col_decl.default_expression;
-            command.default_sort_description = ast_col_decl.default_sort_description;
         }
 
         if (ast_col_decl.comment)
@@ -168,9 +163,6 @@ std::optional<AlterCommand> AlterCommand::parse(const ASTAlterCommand * command_
 
         if (command_ast->column)
             command.after_column = getIdentifierName(command_ast->column);
-
-        if (ast_col_decl.default_sort_description)
-            command.default_sort_description = ast_col_decl.default_sort_description;
 
         command.first = command_ast->first;
         command.if_exists = command_ast->if_exists;

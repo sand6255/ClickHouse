@@ -123,6 +123,7 @@ bool IParserColumnDeclaration<NameParser>::parseImpl(Pos & pos, ASTPtr & node, E
     ParserKeyword s_materialized{"MATERIALIZED"};
     ParserKeyword s_alias{"ALIAS"};
     ParserKeyword s_comment{"COMMENT"};
+    ParserKeyword s_collate{"COLLATE"};
     ParserKeyword s_codec{"CODEC"};
     ParserKeyword s_ttl{"TTL"};
     ParserKeyword s_remove{"REMOVE"};
@@ -162,6 +163,7 @@ bool IParserColumnDeclaration<NameParser>::parseImpl(Pos & pos, ASTPtr & node, E
     std::optional<bool> null_modifier;
     ASTPtr default_expression;
     ASTPtr comment_expression;
+    ASTPtr locale_node;
     ASTPtr codec_expression;
     ASTPtr ttl_expression;
 
@@ -208,6 +210,13 @@ bool IParserColumnDeclaration<NameParser>::parseImpl(Pos & pos, ASTPtr & node, E
             return false;
     }
 
+        if (s_collate.ignore(pos, expected))
+    {
+        /// should be followed by a string literal
+        if (!string_literal_parser.parse(pos, locale_node, expected))
+            return false;
+    }
+
     if (s_codec.ignore(pos, expected))
     {
         if (!codec_parser.parse(pos, codec_expression, expected))
@@ -241,6 +250,12 @@ bool IParserColumnDeclaration<NameParser>::parseImpl(Pos & pos, ASTPtr & node, E
     {
         column_declaration->comment = comment_expression;
         column_declaration->children.push_back(std::move(comment_expression));
+    }
+
+    if (locale_node)
+    {
+        column_declaration->collation = locale_node;
+        column_declaration->children.push_back(std::move(locale_node));
     }
 
     if (codec_expression)
