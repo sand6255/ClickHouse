@@ -124,6 +124,9 @@ void ColumnDescription::readText(ReadBuffer & buf)
                 default_desc.expression = std::move(col_ast->default_expression);
             }
 
+            if (col_ast->collation)
+                locale_node = col_ast->collation->as<ASTLiteral &>().value.get<String>();
+
             if (col_ast->comment)
                 comment = col_ast->comment->as<ASTLiteral &>().value.get<String>();
 

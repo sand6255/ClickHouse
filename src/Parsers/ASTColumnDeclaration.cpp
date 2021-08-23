@@ -25,16 +25,16 @@ ASTPtr ASTColumnDeclaration::clone() const
         res->children.push_back(res->default_expression);
     }
 
-    if (comment)
-    {
-        res->comment = comment->clone();
-        res->children.push_back(res->comment);
-    }
-
     if (collation)
     {
         res->collation = collation->clone();
         res->children.push_back(res->collation);
+    }
+
+    if (comment)
+    {
+        res->comment = comment->clone();
+        res->children.push_back(res->comment);
     }
 
     if (codec)
@@ -81,16 +81,16 @@ void ASTColumnDeclaration::formatImpl(const FormatSettings & settings, FormatSta
         default_expression->formatImpl(settings, state, frame);
     }
 
-    if (comment)
-    {
-        settings.ostr << ' ' << (settings.hilite ? hilite_keyword : "") << "COMMENT" << (settings.hilite ? hilite_none : "") << ' ';
-        comment->formatImpl(settings, state, frame);
-    }
-
     if (collation)
     {
         settings.ostr << ' ' << (settings.hilite ? hilite_keyword : "") << "COLLATE" << (settings.hilite ? hilite_none : "") << ' ';
         collation->formatImpl(settings, state, frame);
+    }
+
+    if (comment)
+    {
+        settings.ostr << ' ' << (settings.hilite ? hilite_keyword : "") << "COMMENT" << (settings.hilite ? hilite_none : "") << ' ';
+        comment->formatImpl(settings, state, frame);
     }
 
     if (codec)

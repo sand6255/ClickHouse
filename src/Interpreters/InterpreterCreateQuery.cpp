@@ -513,6 +513,9 @@ ColumnsDescription InterpreterCreateQuery::getColumnsDescription(
         else
             throw Exception();
 
+        if (col_decl.collation)
+            column.locale_node = col_decl.collation->as<ASTLiteral &>().value.get<String>();
+
         if (col_decl.comment)
             column.comment = col_decl.comment->as<ASTLiteral &>().value.get<String>();
 

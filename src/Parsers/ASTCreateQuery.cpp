@@ -60,6 +60,11 @@ void ASTStorage::formatImpl(const FormatSettings & s, FormatState & state, Forma
         s.ostr << (s.hilite ? hilite_keyword : "") << s.nl_or_ws << "ORDER BY " << (s.hilite ? hilite_none : "");
         order_by->formatImpl(s, state, frame);
     }
+    if (collation)
+    {
+        s.ostr << (s.hilite ? hilite_keyword : "") << s.nl_or_ws << "COLLATE " << (s.hilite ? hilite_none : "");
+        collation->formatImpl(s, state, frame);    
+    }
     if (sample_by)
     {
         s.ostr << (s.hilite ? hilite_keyword : "") << s.nl_or_ws << "SAMPLE BY " << (s.hilite ? hilite_none : "");
@@ -79,11 +84,6 @@ void ASTStorage::formatImpl(const FormatSettings & s, FormatState & state, Forma
     {
         s.ostr << (s.hilite ? hilite_keyword : "") << s.nl_or_ws << "COMMENT " << (s.hilite ? hilite_none : "");
         comment->formatImpl(s, state, frame);
-    }
-    if (collation)
-    {
-        s.ostr << (s.hilite ? hilite_keyword : "") << s.nl_or_ws << "COLLATE " << (s.hilite ? hilite_none : "");
-        collation->formatImpl(s, state, frame);    
     }
 
 }
