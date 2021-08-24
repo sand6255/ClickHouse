@@ -56,6 +56,7 @@ bool ColumnDescription::operator==(const ColumnDescription & other) const
         && type->equals(*other.type)
         && default_desc == other.default_desc
         && comment == other.comment
+        && locale_node == other.locale_node
         && ast_to_str(codec) == ast_to_str(other.codec)
         && ast_to_str(ttl) == ast_to_str(other.ttl);
 }
@@ -76,6 +77,12 @@ void ColumnDescription::writeText(WriteBuffer & buf) const
         writeEscapedString(queryToString(default_desc.expression), buf);
     }
 
+    if (!locale_node.empty())
+    {
+        writeChar('\t', buf);
+        DB::writeText("COLLATE ", buf);
+        writeEscapedString(queryToString(ASTLiteral(Field(locale_node))), buf);
+    }
     if (!comment.empty())
     {
         writeChar('\t', buf);

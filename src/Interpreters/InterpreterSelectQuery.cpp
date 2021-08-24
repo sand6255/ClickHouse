@@ -1591,6 +1591,7 @@ void InterpreterSelectQuery::addPrewhereAliasActions()
     for (const auto & column_name : required_columns)
     {
         auto column_default = storage_columns.getDefault(column_name);
+        LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "in select query name = {} locale = {}", storage_columns.get(column_name).name, storage_columns.get(column_name).locale_node);
         if (column_default && column_default->kind == ColumnDefaultKind::Alias)
         {
             alias_columns_required = true;
