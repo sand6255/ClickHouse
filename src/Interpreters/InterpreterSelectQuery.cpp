@@ -780,6 +780,7 @@ static SortDescription getSortDescription(const ASTSelectQuery & query, ContextP
 {
     SortDescription order_descr;
     order_descr.reserve(query.orderBy()->children.size());
+    auto tables = query.tables();
     for (const auto & elem : query.orderBy()->children)
     {
         String name = elem->children.front()->getColumnName();
@@ -788,6 +789,41 @@ static SortDescription getSortDescription(const ASTSelectQuery & query, ContextP
         std::shared_ptr<Collator> collator;
         if (order_by_elem.collation)
             collator = std::make_shared<Collator>(order_by_elem.collation->as<ASTLiteral &>().value.get<String>());
+        //else if (metadata_snapshot->getColumns().get(name).locale_node))
+
+        if (order_by_elem.with_fill)
+        {
+            FillColumnDescription fill_desc = getWithFillDescription(order_by_elem, context);
+            order_descr.emplace_back(name, order_by_elem.direction, order_by_elem.nulls_direction, collator, true, fill_desc);
+        }
+        else
+            order_descr.emplace_back(name, order_by_elem.direction, order_by_elem.nulls_direction, collator);
+    }
+
+    return order_descr;
+}
+
+static SortDescription getSortDescription(const ASTSelectQuery & query, ContextPtr context, ColumnsDescription columns)
+{
+    SortDescription order_descr;
+    order_descr.reserve(query.orderBy()->children.size());
+    auto tables = query.tables();
+    LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "SortDescriptionSize = {}", query.orderBy()->children.size());
+    for (const auto & elem : query.orderBy()->children)
+    {
+        String name = elem->children.front()->getColumnName();
+        const auto & order_by_elem = elem->as<ASTOrderByElement &>();
+
+        std::shared_ptr<Collator> collator;
+        if (order_by_elem.collation)
+            collator = std::make_shared<Collator>(order_by_elem.collation->as<ASTLiteral &>().value.get<String>());
+        else if (columns.tryGetPhysical(name))
+        {
+            String locale = columns.get(name).locale_node;
+            if (!locale.empty())
+                collator = std::make_shared<Collator>(locale);
+        }
+        LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "name = {} locale = {}", name, collator.get()->getLocale());
 
         if (order_by_elem.with_fill)
         {
@@ -1591,7 +1627,6 @@ void InterpreterSelectQuery::addPrewhereAliasActions()
     for (const auto & column_name : required_columns)
     {
         auto column_default = storage_columns.getDefault(column_name);
-        LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "in select query name = {} locale = {}", storage_columns.get(column_name).name, storage_columns.get(column_name).locale_node);
         if (column_default && column_default->kind == ColumnDefaultKind::Alias)
         {
             alias_columns_required = true;
@@ -1914,13 +1949,13 @@ void InterpreterSelectQuery::executeFetchColumns(QueryProcessingStage::Enum proc
                     query_info.projection->order_optimizer = std::make_shared<ReadInOrderOptimizer>(
                         // TODO Do we need a projection variant for this field?
                         analysis_result.order_by_elements_actions,
-                        getSortDescription(query, context),
+                        getSortDescription(query, context, metadata_snapshot->getColumns()),
                         query_info.syntax_analyzer_result);
                 }
                 else
                 {
                     query_info.order_optimizer = std::make_shared<ReadInOrderOptimizer>(
-                        analysis_result.order_by_elements_actions, getSortDescription(query, context), query_info.syntax_analyzer_result);
+                        analysis_result.order_by_elements_actions, getSortDescription(query, context, metadata_snapshot->getColumns()), query_info.syntax_analyzer_result);
                 }
             }
             else
@@ -2318,7 +2353,7 @@ void InterpreterSelectQuery::executeOrderOptimized(QueryPlan & query_plan, Input
 void InterpreterSelectQuery::executeOrder(QueryPlan & query_plan, InputOrderInfoPtr input_sorting_info)
 {
     auto & query = getSelectQuery();
-    SortDescription output_order_descr = getSortDescription(query, context);
+    SortDescription output_order_descr = getSortDescription(query, context, metadata_snapshot->getColumns());
     UInt64 limit = getLimitForSorting(query, context);
 
     if (input_sorting_info)
@@ -2367,7 +2402,7 @@ void InterpreterSelectQuery::executeOrder(QueryPlan & query_plan, InputOrderInfo
 void InterpreterSelectQuery::executeMergeSorted(QueryPlan & query_plan, const std::string & description)
 {
     auto & query = getSelectQuery();
-    SortDescription order_descr = getSortDescription(query, context);
+    SortDescription order_descr = getSortDescription(query, context, metadata_snapshot->getColumns());
     UInt64 limit = getLimitForSorting(query, context);
 
     executeMergeSorted(query_plan, order_descr, limit, description);
@@ -2471,7 +2506,7 @@ void InterpreterSelectQuery::executeWithFill(QueryPlan & query_plan)
     auto & query = getSelectQuery();
     if (query.orderBy())
     {
-        SortDescription order_descr = getSortDescription(query, context);
+        SortDescription order_descr = getSortDescription(query, context, metadata_snapshot->getColumns());
         SortDescription fill_descr;
         for (auto & desc : order_descr)
         {
@@ -2520,7 +2555,7 @@ void InterpreterSelectQuery::executeLimit(QueryPlan & query_plan)
         {
             if (!query.orderBy())
                 throw Exception("LIMIT WITH TIES without ORDER BY", ErrorCodes::LOGICAL_ERROR);
-            order_descr = getSortDescription(query, context);
+            order_descr = getSortDescription(query, context, metadata_snapshot->getColumns());
         }
 
         auto limit = std::make_unique<LimitStep>(

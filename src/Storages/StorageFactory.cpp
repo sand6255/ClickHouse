@@ -145,12 +145,12 @@ StoragePtr StorageFactory::get(
                 else
                     throw Exception("Unknown table engine " + name, ErrorCodes::UNKNOWN_STORAGE);
             }
-
-            if (storage_def->comment)
-                comment = storage_def->comment->as<ASTLiteral &>().value.get<String>();
             
             if (storage_def->collation)
                 locale = storage_def->collation->as<ASTLiteral &>().value.get<String>();
+
+            if (storage_def->comment)
+                comment = storage_def->comment->as<ASTLiteral &>().value.get<String>();
 
             auto check_feature = [&](String feature_description, FeatureMatcherFn feature_matcher_fn)
             {

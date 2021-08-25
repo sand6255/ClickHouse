@@ -363,6 +363,10 @@ ASTPtr InterpreterCreateQuery::formatColumns(const ColumnsDescription & columns)
             column_declaration->default_expression = column.default_desc.expression->clone();
         }
 
+        if (!column.locale_node.empty())
+        {
+            column_declaration->collation = std::make_shared<ASTLiteral>(Field(column.locale_node));
+        }
         if (!column.comment.empty())
         {
             column_declaration->comment = std::make_shared<ASTLiteral>(Field(column.comment));
