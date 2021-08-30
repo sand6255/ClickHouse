@@ -632,6 +632,7 @@ static StoragePtr create(const StorageFactory::Arguments & args)
 
     StorageInMemoryMetadata metadata;
     metadata.setColumns(args.columns);
+    metadata.setLocale(args.locale);
     metadata.setComment(args.comment);
 
     std::unique_ptr<MergeTreeSettings> storage_settings;

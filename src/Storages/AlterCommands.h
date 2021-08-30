@@ -29,6 +29,7 @@ struct AlterCommand
         MODIFY_COLUMN,
         COMMENT_COLUMN,
         MODIFY_ORDER_BY,
+        MODIFY_COLLATE,
         MODIFY_SAMPLE_BY,
         ADD_INDEX,
         DROP_INDEX,
@@ -74,6 +75,9 @@ struct AlterCommand
 
     /// For COMMENT column
     std::optional<String> comment;
+
+    /// For MODIFY_COLLATE
+    std::optional<String> locale;
 
     /// For ADD or MODIFY - after which column to add a new one. If an empty string, add to the end.
     String after_column;

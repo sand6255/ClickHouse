@@ -132,6 +132,11 @@ void ASTAlterCommand::formatImpl(
         settings.ostr << (settings.hilite ? hilite_keyword : "") << indent_str << "MODIFY ORDER BY " << (settings.hilite ? hilite_none : "");
         order_by->formatImpl(settings, state, frame);
     }
+    else if (type == ASTAlterCommand::MODIFY_COLLATE)
+    {
+        settings.ostr << (settings.hilite ? hilite_keyword : "") << indent_str << "MODIFY COLLATE " << (settings.hilite ? hilite_none : "");
+        order_by->formatImpl(settings, state, frame);
+    }
     else if (type == ASTAlterCommand::MODIFY_SAMPLE_BY)
     {
         settings.ostr << (settings.hilite ? hilite_keyword : "") << indent_str << "MODIFY SAMPLE BY " << (settings.hilite ? hilite_none : "");
