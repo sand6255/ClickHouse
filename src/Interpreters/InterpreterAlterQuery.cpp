@@ -210,7 +210,7 @@ AccessRightsElements InterpreterAlterQuery::getRequiredAccessForCommand(const AS
         }
         case ASTAlterCommand::MODIFY_COLLATE:
         {
-            required_access.emplace_back(AccessType::ALTER_MODIFY_COLUMN, database, table);
+            required_access.emplace_back(AccessType::ALTER_COLLATE, database, table);
             break;
         }
         case ASTAlterCommand::MODIFY_SAMPLE_BY:

@@ -820,10 +820,11 @@ static SortDescription getSortDescription(const ASTSelectQuery & query, ContextP
             collator = std::make_shared<Collator>(order_by_elem.collation->as<ASTLiteral &>().value.get<String>());
         else if (columns.tryGetPhysical(name))
         {
-            String locale = columns.get(name).locale_node;
-            if (!locale.empty())
-                collator = std::make_shared<Collator>(locale);
-            else if(!default_locale.empty())
+            ColumnDescription column = columns.get(name);
+            
+            if (!column.locale_node.empty())
+                collator = std::make_shared<Collator>(column.locale_node);
+            else if(columns.get(name).type.get()->canBeComparedWithCollation() && !default_locale.empty())
                 collator = std::make_shared<Collator>(default_locale);
         }
         if(collator)

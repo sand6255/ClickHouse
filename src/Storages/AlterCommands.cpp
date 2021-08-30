@@ -193,7 +193,6 @@ std::optional<AlterCommand> AlterCommand::parse(const ASTAlterCommand * command_
         AlterCommand command;
         command.ast = command_ast->clone();
         command.type = AlterCommand::MODIFY_COLLATE;
-        command.column_name = getIdentifierName(command_ast->column);
         const auto & ast_locale = command_ast->collator->as<ASTLiteral &>();
         command.locale = ast_locale.value.get<String>();
         return command;
