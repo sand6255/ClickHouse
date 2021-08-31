@@ -210,7 +210,7 @@ bool IParserColumnDeclaration<NameParser>::parseImpl(Pos & pos, ASTPtr & node, E
             return false;
     }
 
-        if (s_collate.ignore(pos, expected))
+    if (s_collate.ignore(pos, expected))
     {
         /// should be followed by a string literal
         if (!string_literal_parser.parse(pos, locale_node, expected))

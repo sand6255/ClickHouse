@@ -809,7 +809,7 @@ static SortDescription getSortDescription(const ASTSelectQuery & query, ContextP
     ColumnsDescription columns = storage->getColumns();
     String default_locale = storage->locale;
     auto tables = query.tables();
-    LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "SortDescriptionSize = {}", query.orderBy()->children.size());
+
     for (const auto & elem : query.orderBy()->children)
     {
         String name = elem->children.front()->getColumnName();
@@ -827,8 +827,6 @@ static SortDescription getSortDescription(const ASTSelectQuery & query, ContextP
             else if(columns.get(name).type.get()->canBeComparedWithCollation() && !default_locale.empty())
                 collator = std::make_shared<Collator>(default_locale);
         }
-        if(collator)
-            LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "name = {} locale = {}", name, collator.get()->getLocale());
 
         if (order_by_elem.with_fill)
         {
@@ -1778,7 +1776,7 @@ void InterpreterSelectQuery::executeFetchColumns(QueryProcessingStage::Enum proc
 {
     auto & query = getSelectQuery();
     const Settings & settings = context->getSettingsRef();
-    LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "Storage does exist = {}", metadata_snapshot != nullptr);
+
     /// Optimization for trivial query like SELECT count() FROM table.
     bool optimize_trivial_count =
         syntax_analyzer_result->optimize_trivial_count

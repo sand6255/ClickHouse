@@ -29,6 +29,7 @@ private:
     using IndexByName = std::unordered_map<String, size_t>;
     using CollatorPtr = std::shared_ptr<Collator>;
     using Collators = std::vector<CollatorPtr>;
+
     Container data;
     IndexByName index_by_name;
     Collators collators;

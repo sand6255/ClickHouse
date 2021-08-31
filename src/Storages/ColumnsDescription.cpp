@@ -83,6 +83,7 @@ void ColumnDescription::writeText(WriteBuffer & buf) const
         DB::writeText("COLLATE ", buf);
         writeEscapedString(queryToString(ASTLiteral(Field(locale_node))), buf);
     }
+
     if (!comment.empty())
     {
         writeChar('\t', buf);

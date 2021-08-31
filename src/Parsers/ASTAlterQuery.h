@@ -85,7 +85,7 @@ public:
      */
     ASTPtr column;
 
-    /** For MODIFY ORDER BY
+    /** For MODIFY COLLATE
      */
     ASTPtr collator;
 
