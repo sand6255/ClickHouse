@@ -35,6 +35,7 @@ struct ColumnDescription
     String name;
     DataTypePtr type;
     ColumnDefault default_desc;
+    String locale_node;
     String comment;
     ASTPtr codec;
     ASTPtr ttl;

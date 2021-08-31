@@ -9,7 +9,6 @@
 #include <Storages/extractKeyExpressionList.h>
 #include <Common/quoteString.h>
 
-
 namespace DB
 {
 

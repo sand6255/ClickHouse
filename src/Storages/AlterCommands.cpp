@@ -188,6 +188,15 @@ std::optional<AlterCommand> AlterCommand::parse(const ASTAlterCommand * command_
         command.order_by = command_ast->order_by;
         return command;
     }
+    else if (command_ast->type == ASTAlterCommand::MODIFY_COLLATE)
+    {
+        AlterCommand command;
+        command.ast = command_ast->clone();
+        command.type = AlterCommand::MODIFY_COLLATE;
+        const auto & ast_locale = command_ast->collator->as<ASTLiteral &>();
+        command.locale = ast_locale.value.get<String>();
+        return command;
+    }
     else if (command_ast->type == ASTAlterCommand::MODIFY_SAMPLE_BY)
     {
         AlterCommand command;
@@ -441,6 +450,10 @@ void AlterCommand::apply(StorageInMemoryMetadata & metadata, ContextPtr context)
 
         /// Recalculate key with new order_by expression.
         sorting_key.recalculateWithNewAST(order_by, metadata.columns, context);
+    }
+    else if (type == MODIFY_COLLATE)
+    {
+        metadata.setLocale(*locale);
     }
     else if (type == MODIFY_SAMPLE_BY)
     {
@@ -866,6 +879,8 @@ String alterTypeToString(const AlterCommand::Type type)
         return "MODIFY COLUMN";
     case AlterCommand::Type::MODIFY_ORDER_BY:
         return "MODIFY ORDER BY";
+    case AlterCommand::Type::MODIFY_COLLATE:
+        return "MODIFY COLLATE";
     case AlterCommand::Type::MODIFY_SAMPLE_BY:
         return "MODIFY SAMPLE BY";
     case AlterCommand::Type::MODIFY_TTL:

@@ -32,6 +32,7 @@ public:
         COMMENT_COLUMN,
         RENAME_COLUMN,
         MODIFY_ORDER_BY,
+        MODIFY_COLLATE,
         MODIFY_SAMPLE_BY,
         MODIFY_TTL,
         MATERIALIZE_TTL,
@@ -86,8 +87,11 @@ public:
 
     /** For MODIFY ORDER BY
      */
-    ASTPtr order_by;
+    ASTPtr collator;
 
+    /** For MODIFY ORDER BY
+     */
+    ASTPtr order_by;
     /** For MODIFY SAMPLE BY
      */
     ASTPtr sample_by;

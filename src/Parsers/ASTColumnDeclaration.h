@@ -17,6 +17,7 @@ public:
     String default_specifier;
     ASTPtr default_expression;
     ASTPtr comment;
+    ASTPtr collation;
     ASTPtr codec;
     ASTPtr ttl;
 

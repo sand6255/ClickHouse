@@ -46,6 +46,7 @@ struct StorageInMemoryMetadata
     /// SELECT QUERY. Supported for MaterializedView and View (have to support LiveView).
     SelectQueryDescription select;
 
+    String locale;
     String comment;
 
     StorageInMemoryMetadata() = default;
@@ -56,6 +57,9 @@ struct StorageInMemoryMetadata
     /// NOTE: Thread unsafe part. You should modify same StorageInMemoryMetadata
     /// structure from different threads. It should be used as MultiVersion
     /// object. See example in IStorage.
+
+    /// Sets a user-defined locale for a table
+    void setLocale(const String & locale_);
 
     /// Sets a user-defined comment for a table
     void setComment(const String & comment_);

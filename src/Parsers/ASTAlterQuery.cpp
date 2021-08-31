@@ -32,6 +32,11 @@ ASTPtr ASTAlterCommand::clone() const
         res->order_by = order_by->clone();
         res->children.push_back(res->order_by);
     }
+    if (collator)
+    {
+        res->collator = collator->clone();
+        res->children.push_back(res->collator);
+    }
     if (partition)
     {
         res->partition = partition->clone();
@@ -131,6 +136,11 @@ void ASTAlterCommand::formatImpl(
     {
         settings.ostr << (settings.hilite ? hilite_keyword : "") << indent_str << "MODIFY ORDER BY " << (settings.hilite ? hilite_none : "");
         order_by->formatImpl(settings, state, frame);
+    }
+    else if (type == ASTAlterCommand::MODIFY_COLLATE)
+    {
+        settings.ostr << (settings.hilite ? hilite_keyword : "") << indent_str << "MODIFY COLLATE " << (settings.hilite ? hilite_none : "");
+        collator->formatImpl(settings, state, frame);
     }
     else if (type == ASTAlterCommand::MODIFY_SAMPLE_BY)
     {

@@ -65,7 +65,7 @@ StoragePtr StorageFactory::get(
     const ConstraintsDescription & constraints,
     bool has_force_restore_data_flag) const
 {
-    String name, comment;
+    String name, comment, locale;
     ASTStorage * storage_def = query.storage;
 
     bool has_engine_args = false;
@@ -145,6 +145,9 @@ StoragePtr StorageFactory::get(
                 else
                     throw Exception("Unknown table engine " + name, ErrorCodes::UNKNOWN_STORAGE);
             }
+            
+            if (storage_def->collation)
+                locale = storage_def->collation->as<ASTLiteral &>().value.get<String>();
 
             if (storage_def->comment)
                 comment = storage_def->comment->as<ASTLiteral &>().value.get<String>();
@@ -208,7 +211,8 @@ StoragePtr StorageFactory::get(
         .constraints = constraints,
         .attach = query.attach,
         .has_force_restore_data_flag = has_force_restore_data_flag,
-        .comment = comment};
+        .comment = comment,
+        .locale = locale};
 
     assert(arguments.getContext() == arguments.getContext()->getGlobalContext());
 

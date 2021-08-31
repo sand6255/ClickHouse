@@ -24,6 +24,8 @@ ASTPtr ASTStorage::clone() const
         res->set(res->primary_key, primary_key->clone());
     if (order_by)
         res->set(res->order_by, order_by->clone());
+    if (collation)
+        res->set(res->collation, collation->clone());
     if (sample_by)
         res->set(res->sample_by, sample_by->clone());
     if (ttl_table)
@@ -59,6 +61,11 @@ void ASTStorage::formatImpl(const FormatSettings & s, FormatState & state, Forma
     {
         s.ostr << (s.hilite ? hilite_keyword : "") << s.nl_or_ws << "ORDER BY " << (s.hilite ? hilite_none : "");
         order_by->formatImpl(s, state, frame);
+    }
+    if (collation)
+    {
+        s.ostr << (s.hilite ? hilite_keyword : "") << s.nl_or_ws << "COLLATE " << (s.hilite ? hilite_none : "");
+        collation->formatImpl(s, state, frame);    
     }
     if (sample_by)
     {

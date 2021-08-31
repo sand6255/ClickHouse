@@ -55,6 +55,7 @@ bool ColumnDescription::operator==(const ColumnDescription & other) const
     return name == other.name
         && type->equals(*other.type)
         && default_desc == other.default_desc
+        && locale_node == other.locale_node
         && comment == other.comment
         && ast_to_str(codec) == ast_to_str(other.codec)
         && ast_to_str(ttl) == ast_to_str(other.ttl);
@@ -76,6 +77,12 @@ void ColumnDescription::writeText(WriteBuffer & buf) const
         writeEscapedString(queryToString(default_desc.expression), buf);
     }
 
+    if (!locale_node.empty())
+    {
+        writeChar('\t', buf);
+        DB::writeText("COLLATE ", buf);
+        writeEscapedString(queryToString(ASTLiteral(Field(locale_node))), buf);
+    }
     if (!comment.empty())
     {
         writeChar('\t', buf);
@@ -123,6 +130,9 @@ void ColumnDescription::readText(ReadBuffer & buf)
                 default_desc.kind = columnDefaultKindFromString(col_ast->default_specifier);
                 default_desc.expression = std::move(col_ast->default_expression);
             }
+
+            if (col_ast->collation)
+                locale_node = col_ast->collation->as<ASTLiteral &>().value.get<String>();
 
             if (col_ast->comment)
                 comment = col_ast->comment->as<ASTLiteral &>().value.get<String>();

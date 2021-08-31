@@ -79,6 +79,7 @@ namespace ErrorCodes
     extern const int DUPLICATE_COLUMN;
     extern const int DATABASE_ALREADY_EXISTS;
     extern const int BAD_ARGUMENTS;
+    extern const int BAD_COLLATION;
     extern const int BAD_DATABASE_FOR_TEMPORARY_TABLE;
     extern const int SUSPICIOUS_TYPE_FOR_LOW_CARDINALITY;
     extern const int ILLEGAL_SYNTAX_FOR_DATA_TYPE;
@@ -363,6 +364,10 @@ ASTPtr InterpreterCreateQuery::formatColumns(const ColumnsDescription & columns)
             column_declaration->default_expression = column.default_desc.expression->clone();
         }
 
+        if (!column.locale_node.empty())
+        {
+            column_declaration->collation = std::make_shared<ASTLiteral>(Field(column.locale_node));
+        }
         if (!column.comment.empty())
         {
             column_declaration->comment = std::make_shared<ASTLiteral>(Field(column.comment));
@@ -512,6 +517,13 @@ ColumnsDescription InterpreterCreateQuery::getColumnsDescription(
             column.type = name_type_it->type;
         else
             throw Exception();
+
+        if (col_decl.collation)
+        {
+            if (!column.type.get()->canBeComparedWithCollation())
+                throw Exception("Collations could be specified only for String, LowCardinality(String), Nullable(String) or for Array or Tuple, containing them.", ErrorCodes::BAD_COLLATION);
+            column.locale_node = col_decl.collation->as<ASTLiteral &>().value.get<String>();
+        }
 
         if (col_decl.comment)
             column.comment = col_decl.comment->as<ASTLiteral &>().value.get<String>();

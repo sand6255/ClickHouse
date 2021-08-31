@@ -780,6 +780,7 @@ static SortDescription getSortDescription(const ASTSelectQuery & query, ContextP
 {
     SortDescription order_descr;
     order_descr.reserve(query.orderBy()->children.size());
+    auto tables = query.tables();
     for (const auto & elem : query.orderBy()->children)
     {
         String name = elem->children.front()->getColumnName();
@@ -788,6 +789,46 @@ static SortDescription getSortDescription(const ASTSelectQuery & query, ContextP
         std::shared_ptr<Collator> collator;
         if (order_by_elem.collation)
             collator = std::make_shared<Collator>(order_by_elem.collation->as<ASTLiteral &>().value.get<String>());
+
+        if (order_by_elem.with_fill)
+        {
+            FillColumnDescription fill_desc = getWithFillDescription(order_by_elem, context);
+            order_descr.emplace_back(name, order_by_elem.direction, order_by_elem.nulls_direction, collator, true, fill_desc);
+        }
+        else
+            order_descr.emplace_back(name, order_by_elem.direction, order_by_elem.nulls_direction, collator);
+    }
+
+    return order_descr;
+}
+
+static SortDescription getSortDescription(const ASTSelectQuery & query, ContextPtr context, StorageMetadataPtr storage)
+{
+    SortDescription order_descr;
+    order_descr.reserve(query.orderBy()->children.size());
+    ColumnsDescription columns = storage->getColumns();
+    String default_locale = storage->locale;
+    auto tables = query.tables();
+    LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "SortDescriptionSize = {}", query.orderBy()->children.size());
+    for (const auto & elem : query.orderBy()->children)
+    {
+        String name = elem->children.front()->getColumnName();
+        const auto & order_by_elem = elem->as<ASTOrderByElement &>();
+
+        std::shared_ptr<Collator> collator;
+        if (order_by_elem.collation)
+            collator = std::make_shared<Collator>(order_by_elem.collation->as<ASTLiteral &>().value.get<String>());
+        else if (columns.tryGetPhysical(name))
+        {
+            ColumnDescription column = columns.get(name);
+            
+            if (!column.locale_node.empty())
+                collator = std::make_shared<Collator>(column.locale_node);
+            else if(columns.get(name).type.get()->canBeComparedWithCollation() && !default_locale.empty())
+                collator = std::make_shared<Collator>(default_locale);
+        }
+        if(collator)
+            LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "name = {} locale = {}", name, collator.get()->getLocale());
 
         if (order_by_elem.with_fill)
         {
@@ -1737,7 +1778,7 @@ void InterpreterSelectQuery::executeFetchColumns(QueryProcessingStage::Enum proc
 {
     auto & query = getSelectQuery();
     const Settings & settings = context->getSettingsRef();
-
+    LOG_INFO(&Poco::Logger::get("TEST_TEST_"), "Storage does exist = {}", metadata_snapshot != nullptr);
     /// Optimization for trivial query like SELECT count() FROM table.
     bool optimize_trivial_count =
         syntax_analyzer_result->optimize_trivial_count
@@ -1913,13 +1954,13 @@ void InterpreterSelectQuery::executeFetchColumns(QueryProcessingStage::Enum proc
                     query_info.projection->order_optimizer = std::make_shared<ReadInOrderOptimizer>(
                         // TODO Do we need a projection variant for this field?
                         analysis_result.order_by_elements_actions,
-                        getSortDescription(query, context),
+                        getSortDescription(query, context, metadata_snapshot),
                         query_info.syntax_analyzer_result);
                 }
                 else
                 {
                     query_info.order_optimizer = std::make_shared<ReadInOrderOptimizer>(
-                        analysis_result.order_by_elements_actions, getSortDescription(query, context), query_info.syntax_analyzer_result);
+                        analysis_result.order_by_elements_actions, getSortDescription(query, context, metadata_snapshot), query_info.syntax_analyzer_result);
                 }
             }
             else
@@ -2317,7 +2358,7 @@ void InterpreterSelectQuery::executeOrderOptimized(QueryPlan & query_plan, Input
 void InterpreterSelectQuery::executeOrder(QueryPlan & query_plan, InputOrderInfoPtr input_sorting_info)
 {
     auto & query = getSelectQuery();
-    SortDescription output_order_descr = getSortDescription(query, context);
+    SortDescription output_order_descr = getSortDescription(query, context, metadata_snapshot);
     UInt64 limit = getLimitForSorting(query, context);
 
     if (input_sorting_info)
@@ -2366,7 +2407,7 @@ void InterpreterSelectQuery::executeOrder(QueryPlan & query_plan, InputOrderInfo
 void InterpreterSelectQuery::executeMergeSorted(QueryPlan & query_plan, const std::string & description)
 {
     auto & query = getSelectQuery();
-    SortDescription order_descr = getSortDescription(query, context);
+    SortDescription order_descr = getSortDescription(query, context, metadata_snapshot);
     UInt64 limit = getLimitForSorting(query, context);
 
     executeMergeSorted(query_plan, order_descr, limit, description);
@@ -2470,7 +2511,7 @@ void InterpreterSelectQuery::executeWithFill(QueryPlan & query_plan)
     auto & query = getSelectQuery();
     if (query.orderBy())
     {
-        SortDescription order_descr = getSortDescription(query, context);
+        SortDescription order_descr = getSortDescription(query, context, metadata_snapshot);
         SortDescription fill_descr;
         for (auto & desc : order_descr)
         {
